@@ -1,0 +1,174 @@
+# Data Sources Configuration for Movie Recommendation ETL Pipeline
+
+# CSV Data Sources
+csv_sources:
+  movies:
+    path: "data/Movies.csv"
+    encoding: "utf-8"
+    required_columns:
+      - "MovieID"
+      - "OriginalTitle" 
+      - "EnglishTitle"
+      - "Genres"
+    optional_columns:
+      - "Budget"
+      - "Revenue"
+      - "Homepage"
+      - "Runtime"
+      - "ReleaseDate"
+      - "ProductionCountries"
+      - "SpokenLanguages"
+
+  ratings:
+    path: "data/Ratings.csv"
+    encoding: "utf-8"
+    required_columns:
+      - "UserID"
+      - "MovieID"
+      - "Rating"
+    optional_columns:
+      - "Date"
+    validation:
+      rating_range: [0.5, 5.0]
+      scale_transformation: "multiply_by_2"  # Transform to 1-10 scale
+
+  persons:
+    path: "data/Persons.csv"
+    encoding: "utf-8" 
+    required_columns:
+      - "CastID"
+      - "Name"
+      - "MovieID"
+    optional_columns:
+      - "Gender"
+      - "Character"
+
+  imdb_top_movies:
+    path: "data/imdb_top_1000.csv"
+    encoding: "utf-8"
+    required_columns:
+      - "Series_Title"
+      - "Released_Year"
+    optional_columns:
+      - "Runtime"
+      - "Genre" 
+      - "IMDB_Rating"
+      - "Director"
+      - "Star1"
+      - "Star2"
+      - "Star3"
+      - "Star4"
+      - "No_of_Votes"
+      - "Gross"
+      - "Certificate"
+      - "Poster_Link"
+      - "Overview"
+
+# API Data Sources
+api_sources:
+  tmdb:
+    name: "The Movie Database"
+    base_url: "https://api.themoviedb.org/3"
+    endpoints:
+      movie_details: "/movie/{movie_id}"
+      trending: "/trending/movie/{time_window}"
+      search: "/search/movie"
+      genres: "/genre/movie/list"
+    rate_limit:
+      requests_per_second: 4
+      requests_per_day: 1000
+    authentication:
+      type: "api_key"
+      key_parameter: "api_key"
+    timeout: 30
+
+  omdb:
+    name: "Open Movie Database"
+    base_url: "http://www.omdbapi.com"
+    endpoints:
+      movie_details: "/?i={imdb_id}&apikey={api_key}"
+      search: "/?s={title}&apikey={api_key}"
+    rate_limit:
+      requests_per_second: 1
+      requests_per_day: 1000
+    timeout: 15
+
+# Streaming Data Configuration
+streaming:
+  buffer_size: 10000
+  batch_size: 100
+  flush_interval: 30  # seconds
+  
+  event_types:
+    rating:
+      required_fields:
+        - "user_id"
+        - "movie_id" 
+        - "rating"
+      validation:
+        rating_range: [0.5, 5.0]
+    
+    interaction:
+      required_fields:
+        - "user_id"
+        - "interaction_type"
+      valid_types:
+        - "view"
+        - "click"
+        - "share"
+        - "like"
+        - "bookmark"
+        - "search"
+
+# Data Quality Checks
+quality_checks:
+  duplicate_detection:
+    enabled: true
+    columns:
+      movies: ["MovieID"]
+      ratings: ["UserID", "MovieID", "Date"]
+      persons: ["CastID", "MovieID"]
+
+  completeness_thresholds:
+    movies:
+      required_completeness: 0.95
+      critical_columns: ["MovieID", "OriginalTitle", "EnglishTitle"]
+    ratings:
+      required_completeness: 0.99
+      critical_columns: ["UserID", "MovieID", "Rating"]
+
+  value_validation:
+    movies:
+      runtime_range: [1, 1000]  # minutes
+      budget_range: [0, 1000000000]  # USD
+      revenue_range: [0, 10000000000]  # USD
+    ratings:
+      user_id_format: "integer"
+      movie_id_format: "integer"
+
+# Extraction Performance Settings
+performance:
+  chunk_size: 10000  # rows per chunk for large files
+  parallel_processing: true
+  max_workers: 4
+  memory_limit: "2GB"
+  
+  caching:
+    enabled: true
+    cache_dir: "cache/"
+    ttl: 3600  # seconds
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    console:
+      enabled: true
+      level: "INFO"
+    file:
+      enabled: true
+      level: "DEBUG"
+      filename: "logs/extraction.log"
+      max_bytes: 10485760  # 10MB
+      backup_count: 5

@@ -1,0 +1,200 @@
+# Movie Recommendation ETL Pipeline Configuration
+
+# Database Configuration
+database:
+  path: "data/movies_recommendation.db"
+  recreate_schema: false  # Set to true to drop and recreate all tables
+  
+# Data Sources Configuration
+data_sources:
+  csv_files:
+    movies: "juliajiang-hw4/Movies.csv"
+    ratings: "juliajiang-hw4/Ratings.csv"
+    persons: "juliajiang-hw4/Persons.csv"
+    imdb: "juliajiang-hw4/imdb_top_1000.csv"
+  
+  # API sources (optional)
+  api_sources:
+    tmdb:
+      enabled: false
+      api_key: "${TMDB_API_KEY}"
+      base_url: "https://api.themoviedb.org/3"
+      rate_limit: 4  # requests per second
+
+# ETL Pipeline Configuration
+pipeline:
+  stop_on_error: true  # Stop pipeline if any stage fails
+  parallel_processing: true
+  
+# Extraction Configuration
+extraction:
+  chunk_size: 10000
+  encoding: "utf-8"
+  validate_on_extract: true
+
+# Transformation Configuration
+transformation:
+  # Data Quality
+  quality_checks:
+    enabled: true
+    fail_on_critical: true
+    auto_fix_level: "HIGH"  # AUTO_FIX levels: LOW, MEDIUM, HIGH, CRITICAL
+  
+  # Normalization
+  normalization:
+    standardize_text: true
+    normalize_dates: true
+    convert_data_types: true
+    handle_missing_values: true
+  
+  # Deduplication
+  deduplication:
+    enabled: true
+    strategies:
+      movies:
+        - columns: ["MovieID"]
+          match_type: "exact"
+          strategy: "keep_first"
+        - columns: ["OriginalTitle", "ReleaseDate"]  
+          match_type: "exact"
+          strategy: "keep_best_quality"
+      ratings:
+        - columns: ["UserID", "MovieID"]
+          match_type: "exact" 
+          strategy: "keep_last"
+      persons:
+        - columns: ["CastID", "MovieID"]
+          match_type: "exact"
+          strategy: "keep_first"
+  
+  # Feature Engineering
+  feature_engineering:
+    # Genre encoding
+    genres:
+      min_frequency: 5  # Minimum occurrences to include genre
+      max_genres: 50    # Maximum number of genres to consider
+      encoding_methods: ["onehot", "tfidf", "embeddings"]
+    
+    # User profiles
+    user_profiles:
+      min_ratings_per_user: 5
+      profile_dimensions: 50
+      include_temporal_features: true
+      include_behavioral_features: true
+
+# Loading Configuration  
+loading:
+  batch_size: 1000
+  parallel_workers: 4
+  update_existing: true
+  handle_conflicts: "upsert"  # Options: ignore, replace, upsert
+
+# Performance Configuration
+performance:
+  batch_size: 1000
+  max_workers: 4
+  memory_limit: "2GB"
+  cache_enabled: true
+  
+  # Database optimizations
+  database:
+    wal_mode: true
+    cache_size_mb: 64
+    synchronous: "NORMAL"  # OFF, NORMAL, FULL
+    temp_store: "memory"
+
+# Validation Configuration
+validation:
+  fail_on_critical: true
+  generate_reports: true
+  
+  # Data quality thresholds
+  quality_thresholds:
+    completeness:
+      movies: 0.95      # 95% of records must have required fields
+      ratings: 0.99     # 99% of ratings must be valid
+      persons: 0.90     # 90% of person records must be complete
+    
+    consistency:
+      rating_range: [1.0, 10.0]
+      date_range: ["1888-01-01", "2030-12-31"]
+      
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  handlers:
+    console:
+      enabled: true
+      level: "INFO"
+    
+    file:
+      enabled: true
+      level: "DEBUG"
+      max_size_mb: 10
+      backup_count: 5
+
+# Monitoring Configuration
+monitoring:
+  metrics_enabled: true
+  performance_tracking: true
+  error_tracking: true
+  
+  # ETL run tracking
+  track_runs: true
+  store_statistics: true
+  
+  # Alerts (future implementation)
+  alerts:
+    email_enabled: false
+    slack_enabled: false
+    error_threshold: 0.05  # Alert if error rate > 5%
+
+# Output Configuration
+output:
+  generate_reports: true
+  report_formats: ["json", "html"]
+  
+  # Export options
+  export_transformed_data: false
+  export_path: "output/"
+  
+  # Data samples for inspection
+  save_samples: true
+  sample_size: 100
+
+# Security Configuration (for future API integrations)
+security:
+  encrypt_sensitive_data: false
+  mask_pii: true
+  audit_trail: true
+
+# Environment-specific overrides
+environments:
+  development:
+    logging:
+      level: "DEBUG"
+    database:
+      recreate_schema: true
+    performance:
+      batch_size: 100
+      max_workers: 2
+  
+  production:
+    logging:
+      level: "INFO" 
+    performance:
+      batch_size: 5000
+      max_workers: 8
+    monitoring:
+      alerts:
+        email_enabled: true
+        
+  testing:
+    logging:
+      level: "WARNING"
+    pipeline:
+      stop_on_error: false
+    output:
+      save_samples: false

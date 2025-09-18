@@ -1,0 +1,41 @@
+# Core data processing
+pandas>=1.5.0
+numpy>=1.21.0
+
+# Database
+sqlite3  # Built-in with Python
+
+# Machine Learning
+scikit-learn>=1.1.0
+scipy>=1.9.0
+
+# Recommendation System
+scikit-surprise>=1.1.1
+
+# Data validation and quality
+pydantic>=1.10.0
+
+# Configuration and serialization
+pyyaml>=6.0
+jsonschema>=4.0.0
+
+# Logging and monitoring
+structlog>=22.0.0
+
+# Utilities
+python-dateutil>=2.8.0
+tqdm>=4.64.0
+
+# Optional: Performance enhancements
+# numba>=0.56.0  # Uncomment for faster numerical computations
+# joblib>=1.1.0  # For parallel processing
+
+# Development and testing (optional)
+pytest>=7.0.0
+pytest-cov>=3.0.0
+black>=22.0.0
+flake8>=5.0.0
+
+# Documentation (optional)
+# sphinx>=5.0.0
+# sphinx-rtd-theme>=1.0.0
