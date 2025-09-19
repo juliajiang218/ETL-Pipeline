@@ -1,1 +1,34 @@
 moneyball.db
+
+# PDF files
+*.pdf
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Large data files
+*.csv
+
+# Homework directories
+juliajiang*
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
