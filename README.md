@@ -12,6 +12,9 @@ This ETL pipeline extracts movie data from multiple sources, transforms and clea
 - [TU Graz Movie Dataset](https://github.com/tugraz-isds/datasets/tree/master/movies)
 - [IMDb Dataset of Top 1000 Movies and TV Shows](https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows)
 
+## Curated Entity Relation Diagram
+![hw4updated_ERD](https://github.com/user-attachments/assets/1c92c677-641d-4138-8c7b-01d8b112fa17)
+
 ## Pipeline Components
 
 ### Extract Phase
