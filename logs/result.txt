@@ -1,0 +1,3 @@
+[2025-09-20 15:06:04] User ID: 1, Top N: 3, Recommendations: Caesar Must Die, Percy Jackson & the Olympians: The Lightning Thief, Making the Boys
+[2025-09-20 15:08:44] User ID: 1, Top N: 3, Recommendations: Percy Jackson & the Olympians: The Lightning Thief, Long Pigs, Beyond Gay: The Politics of Pride
+[2025-09-20 15:09:10] User ID: 2, Top N: 3, Recommendations: Five Dances, Exodus: Gods and Kings, Confession of a Child of the Century

@@ -1,0 +1,187 @@
+# ETL Pipeline and Movie Recommendation System Configuration
+
+# Database Configuration
+database:
+  path: "../extract/data_sources/movies.db"
+  connection_timeout: 30
+  recreate_schema: false
+  wal_mode: true
+  cache_size_mb: 64
+  synchronous: "NORMAL"
+  temp_store: "memory"
+
+# Data Sources Configuration
+data_sources:
+  csv_files:
+    movies: "juliajiang-hw4/Movies.csv"
+    ratings: "juliajiang-hw4/Ratings.csv"
+    persons: "juliajiang-hw4/Persons.csv"
+    imdb: "juliajiang-hw4/imdb_top_1000.csv"
+
+# ETL Pipeline Configuration
+pipeline:
+  stop_on_error: true
+  parallel_processing: true
+
+# Extraction Configuration
+extraction:
+  chunk_size: 10000
+  encoding: "utf-8"
+  validate_on_extract: true
+
+# Transformation Configuration
+transformation:
+  quality_checks:
+    enabled: true
+    fail_on_critical: true
+    auto_fix_level: "HIGH"
+
+  normalization:
+    standardize_text: true
+    normalize_dates: true
+    convert_data_types: true
+    handle_missing_values: true
+
+  deduplication:
+    enabled: true
+    strategies:
+      movies:
+        - columns: ["MovieID"]
+          match_type: "exact"
+          strategy: "keep_first"
+      ratings:
+        - columns: ["UserID", "MovieID"]
+          match_type: "exact"
+          strategy: "keep_last"
+
+# Loading Configuration
+loading:
+  batch_size: 1000
+  parallel_workers: 4
+  update_existing: true
+  handle_conflicts: "upsert"
+
+# Recommendation System Configuration
+recommendation:
+  # Collaborative Filtering Settings
+  collaborative_filtering:
+    algorithm: "SVD"  # Singular Value Decomposition
+    n_factors: 50     # Number of latent factors
+    n_epochs: 20      # Training epochs
+    learning_rate: 0.005
+    regularization: 0.02
+
+  # Default recommendation parameters
+  default_top_n: 3
+  max_recommendations: 20
+  min_rating_threshold: 3.0
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  # Main log file
+  main_log:
+    enabled: true
+    path: "../logs/application.log"
+    max_size_mb: 10
+    backup_count: 5
+
+  # Results log file
+  results_log:
+    enabled: true
+    path: "../logs/result.txt"
+    include_timestamp: true
+    include_user_id: true
+    include_algorithm: true
+
+  # Console logging
+  console:
+    enabled: true
+    level: "INFO"
+
+# Performance Configuration
+performance:
+  batch_size: 1000
+  max_workers: 4
+  memory_limit: "2GB"
+  cache_enabled: true
+
+  # Profiling settings
+  profiling:
+    enabled: false
+    output_lines: 20
+    sort_by: "cumulative"
+
+  # Memory management
+  memory:
+    cache_recommendations: true
+    cache_size_limit: 1000
+
+# Output Configuration
+output:
+  generate_reports: true
+  report_formats: ["json", "html"]
+
+  # Display settings
+  display:
+    show_movie_ids: false
+    show_confidence_scores: false
+    separator: ", "
+
+  # Export options
+  export:
+    enabled: false
+    formats: ["json", "csv"]
+    path: "../output/"
+
+# Validation Configuration
+validation:
+  fail_on_critical: true
+  generate_reports: true
+
+  # Quality thresholds
+  quality_thresholds:
+    completeness:
+      movies: 0.95
+      ratings: 0.99
+      persons: 0.90
+
+    consistency:
+      rating_range: [1.0, 10.0]
+      date_range: ["1888-01-01", "2030-12-31"]
+
+  # Input validation
+  user_id:
+    min_value: 1
+    max_value: 999999
+
+  top_n:
+    min_value: 1
+    max_value: 50
+    default: 3
+
+# Error Handling
+error_handling:
+  continue_on_warning: true
+  retry_attempts: 3
+  fallback_recommendations: true
+
+# Environment-specific overrides
+environments:
+  development:
+    logging:
+      level: "DEBUG"
+    database:
+      recreate_schema: true
+    performance:
+      batch_size: 100
+      max_workers: 2
+
+  production:
+    logging:
+      level: "INFO"
+    performance:
+      batch_size: 5000
+      max_workers: 8

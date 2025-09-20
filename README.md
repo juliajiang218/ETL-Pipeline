@@ -1,281 +1,124 @@
-# Movie Recommendation ETL Pipeline
+# ETL Pipeline: Movie Data Processing and Aggregation
 
-A production-ready ETL (Extract-Transform-Load) pipeline for processing movie ratings data and delivering real-time personalized recommendations with sub-second response times.
+General purpose processing and aggregating of movie data into the shape and format needed for content-based recommendations.
 
-## 🚀 Features
+## Project Overview
 
-### **ETL Pipeline Components**
-- **Extract Layer**: Multi-format data ingestion from CSV files, APIs, and streaming sources
-- **Transform Layer**: Advanced data cleaning, normalization, quality validation, and feature engineering
-- **Load Layer**: Optimized database loading with parallel processing and error handling
+This ETL pipeline extracts movie data from multiple sources, transforms and cleans the data according to various requirements, and loads it into a SQLite database with optimized schema for efficient querying and content-based recommendations.
 
-### **Performance Optimizations**
-- ⚡ **Sub-second recommendations** through intelligent pre-computation
-- 📈 **Scalable to 1M+ ratings** with optimized database design and indexing
-- 🧠 **Smart caching** reducing compute overhead by 90%
-- 🔄 **Parallel processing** for batch operations
+## Data Sources
 
-### **Machine Learning & Recommendations**
-- **Content-based filtering** using genre vectors and movie features
-- **Collaborative filtering** with matrix factorization (SVD)
-- **Hybrid recommendation system** combining multiple algorithms
-- **A/B testing framework** for algorithm comparison
+**Extract data from multiple data sources:**
+- [TU Graz Movie Dataset](https://github.com/tugraz-isds/datasets/tree/master/movies)
+- [IMDb Dataset of Top 1000 Movies and TV Shows](https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows)
 
-### **Data Quality & Monitoring**
-- Comprehensive data validation with 20+ quality rules
-- Real-time pipeline monitoring and error tracking
-- Data quality metrics dashboard
-- Memory and runtime optimization analysis
+## Pipeline Components
 
-## 📊 Architecture Overview
+### Extract Phase
+- **Multi-format data ingestion** from CSV files and external datasets
+- **Data source validation** ensuring data integrity from extraction
+- **Schema validation** with comprehensive data quality checks
+
+### Transform Phase
+- **Data cleaning and normalization** standardizing formats across sources
+- **Data validation and rejection** filtering malformatted data points based on entity requirements
+- **Join operations** combining data from multiple sources
+- **Standardize value ranges** ensuring consistency across datasets
+- **Database schema normalization** following relational database principles
+
+### Load Phase
+- **SQLite database population** using designed database schemas and scripts
+- **Integrity constraints** review and implementation
+- **Indexes and views** creation to support efficient content-based recommendations
+- **Performance testing** through multiple query executions
+
+## Database Design
+
+### Logical Data Models and Schema
+Created scripts implementing logical data models and database schemas based on the datasets:
+
+- **Entity Relationship Design**: Comprehensive ERD diagram enumerating data entity relationships
+- **Normalized Schema**: Following database normalization principles for optimal data storage
+- **Data Integrity**: Appropriate integrity constraints ensuring data consistency
+- **Performance Optimization**: Indexes and views designed for efficient content-based recommendations
+
+### Data Validation and Quality Control
+Given various requirements on data entity specifications, refined database schemas ensure the process rejects malformatted data points:
+
+- **Schema Validation**: Strict validation against expected data formats
+- **Data Type Enforcement**: Ensuring proper data types for all fields
+- **Constraint Checking**: Business rule validation for data consistency
+- **Quality Metrics**: Comprehensive reporting on data quality issues
+
+## Technical Architecture
 
 ```
 ETL Pipeline/
-├── extract/                    # Data extraction layer
-│   ├── data_sources/          # CSV, API, streaming extractors
-│   ├── config/               # Source configurations
-│   └── schemas/              # Data validation schemas
-├── transform/                 # Data transformation layer
-│   ├── data_cleaning/        # Normalization, validation, deduplication  
-│   ├── feature_engineering/  # Genre encoding, user profiles
-│   └── ml_preprocessing/     # Model input preparation
-├── load/                     # Data loading layer
-│   ├── database/            # Schema creation, indexing
-│   ├── batch_processing/    # High-volume data insertion
-│   └── caching/            # Pre-computed recommendations
-├── config/                  # Pipeline configurations
-├── main_etl_pipeline.py    # Main orchestrator
-└── recommend.py           # Recommendation engine
+├── extract/                    # Data extraction from multiple sources
+│   ├── data_sources/          # Data extraction scripts
+│   │   └── extract.py        # Main extraction script
+│   ├── config/               # Data source configurations
+│   │   └── data_sources.yaml # Data source configuration
+│   └── schemas/              # Database schemas
+│       ├── movies.sql        # Movies table schema
+│       └── movie_recommender.sql # Movie recommender schema
+├── transform/                 # Data transformation and recommendation engine
+│   ├── content-based-recommendation/ # Content-based recommendation system
+│   │   ├── content_Rec.py    # Content-based recommendation logic
+│   │   └── main.py          # Content-based recommendation main script
+│   ├── db_setup.py          # Database setup and initialization
+│   ├── db_schema.sql        # Database schema definitions
+│   └── recommendation.py    # Collaborative filtering recommendation engine
+├── load/                     # Movie recommendation interface
+│   └── main.py              # Command-line interface for movie recommendations
+├── config/                  # Pipeline configurations and settings
+│   └── pipeline_config.yaml # Main pipeline configuration
+└── logs/                    # Logging directory
+    └── result.txt          # Recommendation results log
 ```
 
-## 🛠️ Installation & Setup
+## Usage
 
-### Prerequisites
-- Python 3.8+
-- SQLite (included with Python)
-
-### Quick Start
-
-1. **Clone and setup environment**:
-```bash
-git clone <repository-url>
-cd "ETL Pipeline"
-pip install -r requirements.txt
-```
-
-2. **Prepare your data**:
-   - Place CSV files in the appropriate directories:
-     - `Movies.csv` - Movie metadata
-     - `Ratings.csv` - User ratings  
-     - `Persons.csv` - Cast and crew information
-     - `imdb_top_1000.csv` - IMDb movie data
-
-3. **Run the complete ETL pipeline**:
-```bash
-python main_etl_pipeline.py --config config/pipeline_config.yaml
-```
-
-4. **Generate recommendations**:
-```bash
-# For a specific user
-python recommend.py --db data/movies_recommendation.db --user-id 123 --top-n 10
-
-# Precompute recommendations for all users (for production)
-python recommend.py --db data/movies_recommendation.db --precompute
-```
-
-## 📈 Performance Benchmarks
-
-| Metric | Content-Based | Collaborative | Hybrid |
-|--------|---------------|---------------|--------|
-| **Response Time** | 0.2s | 6.1s | 0.3s* |
-| **Memory Usage** | <10MB | 100MB+ | 15MB |
-| **Scalability** | Linear | Quadratic | Linear |
-| **Cold Start** | Excellent | Poor | Good |
-
-*With pre-computation enabled
-
-## 🔧 Configuration
-
-The pipeline uses YAML configuration files. Key settings:
-
-```yaml
-# config/pipeline_config.yaml
-database:
-  path: "data/movies_recommendation.db"
-
-data_sources:
-  csv_files:
-    movies: "data/Movies.csv"
-    ratings: "data/Ratings.csv"
-
-performance:
-  batch_size: 1000
-  max_workers: 4
-
-feature_engineering:
-  genres:
-    min_frequency: 5
-    max_genres: 50
-```
-
-## 📋 Usage Examples
-
-### Running Specific ETL Stages
-```bash
-# Extract only
-python main_etl_pipeline.py --config config/pipeline_config.yaml --stages extract
-
-# Transform and load
-python main_etl_pipeline.py --config config/pipeline_config.yaml --stages transform load
-```
-
-### Different Recommendation Algorithms
-```bash
-# Content-based recommendations
-python recommend.py --db data/movies_recommendation.db --user-id 123 --algorithm content
-
-# Collaborative filtering
-python recommend.py --db data/movies_recommendation.db --user-id 123 --algorithm collaborative
-
-# Hybrid approach (default)
-python recommend.py --db data/movies_recommendation.db --user-id 123 --algorithm hybrid
-```
-
-### Development Mode
-```bash
-# Run with debug logging and small batches
-python main_etl_pipeline.py --config config/pipeline_config.yaml --log-level DEBUG
-```
-
-## 📊 Pipeline Monitoring
-
-The pipeline generates comprehensive reports and logs:
-
-- **Execution Reports**: `reports/pipeline_report_[timestamp].json`
-- **Data Quality Reports**: Detailed validation results with statistics
-- **Performance Metrics**: Processing times, throughput, error rates
-- **Recommendation Analytics**: Model performance, cache hit rates
-
-## 🧪 Data Quality Features
-
-- **Schema Validation**: Ensures data conforms to expected formats
-- **Business Rule Validation**: 20+ domain-specific quality checks
-- **Duplicate Detection**: Advanced fuzzy and exact matching
-- **Data Normalization**: Consistent formatting and standardization
-- **Completeness Monitoring**: Tracks missing data percentages
-
-## 🏗️ Database Schema
-
-Optimized schema with performance indexes:
-
-```sql
--- Core entities
-movie, genre, person, user
-
--- Relationships  
-user_rating, movie_genres, movie_cast, movie_crew
-
--- Features & ML
-user_profiles, movie_features, genre_features
-
--- Recommendations & Caching
-user_recommendations, recommendation_cache
-
--- Monitoring
-etl_runs, data_quality_reports
-```
-
-## 🚦 Pipeline Stages
-
-1. **Extract**: Ingests data from multiple sources with validation
-2. **Validate**: Runs comprehensive data quality checks
-3. **Transform**: Cleans, normalizes, and engineers features
-4. **Load**: Efficiently loads data into optimized database schema
-5. **Finalize**: Generates reports and verifies integrity
-
-## 🔍 Key Components
-
-### Extract Layer
-- **CSVExtractor**: Multi-format file ingestion with error handling
-- **APIConnector**: External API integration with rate limiting
-- **StreamingDataHandler**: Real-time data processing
-
-### Transform Layer
-- **DataNormalizer**: Standardizes formats and handles missing data
-- **QualityEngine**: 20+ validation rules with auto-fixing
-- **DeduplicationEngine**: Advanced duplicate detection and resolution
-- **GenreEncoder**: Creates genre feature vectors for ML
-- **UserProfileBuilder**: Builds comprehensive user preference profiles
-
-### Load Layer
-- **SchemaManager**: Creates optimized database schema with indexes
-- **BulkLoader**: High-performance parallel data loading
-- **CacheManager**: Manages pre-computed recommendation cache
-
-## 📈 Scalability Features
-
-- **Parallel Processing**: Concurrent extraction, transformation, and loading
-- **Batch Processing**: Handles large datasets efficiently
-- **Memory Management**: Optimized for large-scale operations
-- **Database Optimization**: Indexes, views, and query optimization
-- **Caching Strategy**: Pre-computation for sub-second responses
-
-## 🛡️ Error Handling & Recovery
-
-- **Graceful Degradation**: Pipeline continues on non-critical errors  
-- **Detailed Logging**: Comprehensive error tracking and debugging
-- **Data Validation**: Multiple checkpoints ensure data integrity
-- **Rollback Capability**: Can recover from failed operations
-- **Performance Monitoring**: Tracks and alerts on performance issues
-
-## 🔬 Testing & Quality Assurance
+### Movie Recommendation System
+The main interface for generating movie recommendations:
 
 ```bash
-# Run data quality validation
-python -m pytest tests/test_data_quality.py
+# Generate 3 recommendations for user ID 1
+cd load
+python main.py 1
 
-# Performance benchmarks
-python -m pytest tests/test_performance.py --benchmark-only
+# Generate 5 recommendations for user ID 10
+python main.py 10 --top_n 5
+
+# Run with profiling enabled
+python main.py 1 --profile
 ```
 
-## 📝 Development
+### ETL Pipeline Components
 
-### Code Structure
-- **Modular Design**: Clean separation of concerns
-- **Type Hints**: Full type annotation for better IDE support  
-- **Documentation**: Comprehensive docstrings and comments
-- **Configuration-Driven**: Easy customization without code changes
+#### Data Extraction
+```bash
+cd extract/data_sources
+python extract.py
+```
 
-### Contributing
-1. Follow PEP 8 style guidelines
-2. Add tests for new features
-3. Update documentation
-4. Ensure all quality checks pass
+#### Database Setup
+```bash
+cd transform
+python db_setup.py
+```
 
-## 🎯 Business Impact
+#### Content-Based Recommendations
+```bash
+cd transform/content-based-recommendation
+python main.py
+```
 
-- **Personalization at Scale**: Handle millions of users and ratings
-- **Cost Optimization**: 90% reduction in computational overhead
-- **Real-time Recommendations**: Sub-second response times
-- **A/B Testing Ready**: Framework for testing different algorithms
-- **Production Monitoring**: Comprehensive observability and alerting
+## Data Quality and Testing
 
-## 📚 Technical Documentation
+The pipeline includes comprehensive data validation and testing:
 
-For detailed technical documentation, see:
-- [Architecture Design](docs/architecture.md)
-- [Database Schema](docs/schema.md) 
-- [API Reference](docs/api.md)
-- [Performance Tuning](docs/performance.md)
-
-## 🤝 Support
-
-For issues, feature requests, or contributions:
-- Create an issue in the repository
-- Review existing documentation
-- Check performance benchmarks and optimization guides
-
----
-
-**Built for production scalability with enterprise-grade error handling and monitoring.** 🚀
+- **Multiple query testing** to verify database design effectiveness
+- **Data integrity verification** through constraint checking
+- **Performance benchmarking** for content-based recommendation queries
+- **Quality reporting** with detailed statistics on data processing
